@@ -1,8 +1,19 @@
 import axios from "axios";
-import { Fiscal } from "../../constants/fiscal.type";
-import { FPrinter } from "../../constants/fprinter.type";
+import {
+    BarCode,
+    Fiscal,
+    GraphicCoupon,
+    Lottery,
+    Message, OpenDrawer, Payment,
+    QrCode,
+    Refund,
+    Sale,
+    Subtotal
+} from "../../constants/fiscal.type";
+import {FPrinter} from "../../constants/fprinter.type";
 import * as xmlbuilder from 'xmlbuilder';
-import { Parser } from 'xml2js';
+import {Parser} from 'xml2js';
+import ReceiptRow = Fiscal.ReceiptRow;
 
 export class EpsonXmlHttpClient extends FPrinter.Client {
 
@@ -16,23 +27,23 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
             printerCommand.ele('openDrawer', {
                 operator: command.data?.operator ?? 1
             });
-        }, 
+        },
         [Fiscal.CommandCode.QUERY_PRINTER_STATUS]: (printerCommand: xmlbuilder.XMLElement, command: Fiscal.Command) => {
             printerCommand.ele('queryPrinterStatus', {
                 operator: command.data?.operator ?? 1,
                 statusType: command.data?.statusType ?? 0
             });
-        }, 
+        },
         [Fiscal.CommandCode.REBOOT_WEB_SERVER]: (printerCommand: xmlbuilder.XMLElement, command: Fiscal.Command) => {
             printerCommand.ele('rebootWebServer', {
                 operator: command.data?.operator ?? 1
             });
-        }, 
+        },
         [Fiscal.CommandCode.RESET_PRINTER]: (printerCommand: xmlbuilder.XMLElement, command: Fiscal.Command) => {
             printerCommand.ele('resetPrinter', {
                 operator: command.data?.operator ?? 1
             });
-        }, 
+        },
         [Fiscal.CommandCode.GET_NATIVE_CODE_FUNCTION]: (printerCommand: xmlbuilder.XMLElement, command: Fiscal.Command) => {
             printerCommand.ele('directIO', {
                 command: command.data?.command ?? '0000',
@@ -40,13 +51,13 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
                 timeout: command.data?.timeout ?? '6000',
                 comment: command.data?.comment ?? ''
             });
-        }, 
+        },
         [Fiscal.CommandCode.DISPLAY_TEXT]: (printerCommand: xmlbuilder.XMLElement, command: Fiscal.Command) => {
             printerCommand.ele('displayText', {
                 operator: command.data?.operator ?? 1,
                 data: command.data?.text ?? ''
             });
-        }, 
+        },
         [Fiscal.CommandCode.PRINT_CONTENT_BY_NUMBERS]: (printerCommand: xmlbuilder.XMLElement, command: Fiscal.Command) => {
             printerCommand.ele('printContentByNumbers', {
                 operator: command.data?.operator ?? 1,
@@ -62,7 +73,7 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
 
     /**
      * commercial document
-     * @param receipt 
+     * @param receipt
      */
     async printFiscalReceipt(receipt: Fiscal.Receipt): Promise<FPrinter.Response> {
         const xmlDoc = this.convertReceiptToXmlDoc(receipt);
@@ -71,7 +82,7 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
 
     /**
      * daily closure (X and Z reports)
-     * @param report 
+     * @param report
      */
     async printFiscalReport(report: Fiscal.Report): Promise<FPrinter.Response> {
         const xmlDoc = this.convertReportToXmlDoc(report);
@@ -80,7 +91,7 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
 
     /**
      * print a commercial refund/void document
-     * @param cancel 
+     * @param cancel
      */
     async printCancel(cancel: Fiscal.Cancel): Promise<FPrinter.Response> {
         const xmlDoc = this.convertCancelToXmlDoc(cancel);
@@ -89,7 +100,7 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
 
     /**
      * management document
-     * @param nonFiscal 
+     * @param nonFiscal
      */
     // async printNonFiscal(nonFiscal: Fiscal.NonFiscal): Promise<FPrinter.Response> {
     //     const xmlDoc = this.convertNonFiscalToXmlDoc(nonFiscal);
@@ -98,7 +109,7 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
 
     /**
      * fiscal document
-     * @param invoice 
+     * @param invoice
      */
     // async printInvoice(invoice: Fiscal.Invoice): Promise<FPrinter.Response> {
     //     const xmlDoc = this.convertInvoiceToXmlDoc(invoice);
@@ -107,7 +118,7 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
 
     /**
      * send Command to fiscal printer
-     * @param commands 
+     * @param commands
      */
     async executeCommand(...commands: Fiscal.Command[]): Promise<FPrinter.Response> {
         const xmlDoc = this.convertCommandToXmlDoc(...commands);
@@ -121,7 +132,7 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
     /**
      * send to the printer server
      * @param xmlDoc
-     * @returns 
+     * @returns
      */
     private async send(xmlDoc: xmlbuilder.XMLDocument): Promise<FPrinter.Response> {
         // build the printer server url based on config
@@ -173,15 +184,15 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
      *      </s:Body>
      * </s:Envelope>
      * @param xmlDoc
-     * @returns 
+     * @returns
      */
     private parseRequest(xmlDoc: xmlbuilder.XMLDocument): string {
         const reqXmlStr = xmlbuilder
-            .create(EpsonXmlHttpClient.XML_ROOT, { version: '1.0', encoding: 'utf-8' })
+            .create(EpsonXmlHttpClient.XML_ROOT, {version: '1.0', encoding: 'utf-8'})
             .att('xmlns:s', 'http://schemas.xmlsoap.org/soap/envelope/')
             .ele(EpsonXmlHttpClient.XML_BODY)
             .importDocument(xmlDoc)
-            .end({ pretty: true });
+            .end({pretty: true});
         return reqXmlStr;
     }
 
@@ -193,14 +204,14 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
      *          <response success="true" code="" status="xxxxx" />
      *      </s:Body>
      * </s:Envelope>
-     * @param xmlStr 
+     * @param xmlStr
      */
     private async parseResponse(xmlStr: string): Promise<FPrinter.Response> {
         // create xml parser
         let response;
         // explicitArray: Always put child nodes in an array if true; otherwise an array is created only if there is more than one.
         // mergeAttrs: Merge attributes and child elements as properties of the parent, instead of keying attributes off a child attribute object.
-        const parser = new Parser({ explicitArray: false, mergeAttrs: true });
+        const parser = new Parser({explicitArray: false, mergeAttrs: true});
         // parse to object
         const xmlObj = await parser.parseStringPromise(xmlStr);
         if (xmlObj && xmlObj[EpsonXmlHttpClient.XML_RES_ROOT] && xmlObj[EpsonXmlHttpClient.XML_RES_ROOT][EpsonXmlHttpClient.XML_RES_BODY]) {
@@ -219,18 +230,21 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
 
     /**
      * convert `Fiscal.Receipt` to the object that xml2js builder and cgi server supports.
-     * @param receipt 
-     * @returns 
+     * @param receipt
+     * @returns
      */
     private convertReceiptToXmlDoc(receipt: Fiscal.Receipt): xmlbuilder.XMLDocument {
         // init
         const printerFiscalReceipt = xmlbuilder.create('printerFiscalReceipt');
         // begin
-        printerFiscalReceipt.ele('beginFiscalReceipt', { operator: receipt.operator ?? 1 });
+        printerFiscalReceipt.ele('beginFiscalReceipt', {operator: receipt.operator ?? 1});
         // sales
-        if (receipt.sales && receipt.sales.length > 0) {
-            for (const sale of receipt.sales) {
-                // sale or return
+
+        for (const row in receipt.rows) {
+            const receiptRow: ReceiptRow = row as ReceiptRow;
+            if (receiptRow.sale) {
+                const sale: Sale = receiptRow.sale as Sale;
+
                 if (sale.type === Fiscal.ItemType.HOLD) {
                     // item adjustment
                     if (sale.operations && sale.operations.length > 0) {
@@ -293,10 +307,59 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
                     });
                 }
             }
-        }
-        // refunds
-        if (receipt.refunds && receipt.refunds.length > 0) {
-            for (const refund of receipt.refunds) {
+
+            if (receiptRow.barcode) {
+                printerFiscalReceipt.ele('printBarCode', {
+                    operator: receiptRow.barcode.operator ?? 1,
+                    position: receiptRow.barcode.position ?? 900,
+                    width: receiptRow.barcode.width ?? 1,
+                    height: receiptRow.barcode.height ?? 1,
+                    hRIPosition: receiptRow.barcode.hriPosition ?? 0,
+                    hRIFont: receiptRow.barcode.hriFont ?? 'A',
+                    codeType: receiptRow.barcode.type ?? 'CODE128',
+                    code: receiptRow.barcode.data ?? ''
+                });
+            }
+
+            if (receiptRow.qrCode) {
+                printerFiscalReceipt.ele('printBarCode', {
+                    operator: receiptRow.qrCode.operator ?? 1,
+                    qRCodeAlignment: receiptRow.qrCode.alignment ?? 0,
+                    qRCodeSize: receiptRow.qrCode.size ?? 1,
+                    qRCodeErrorCorrection: receiptRow.qrCode.errorCorrection ?? 0,
+                    codeType: receiptRow.qrCode.type ?? 'CODE128',
+                    code: receiptRow.qrCode.data ?? ''
+                });
+            }
+
+            if (receiptRow.graphicCoupon) {
+                printerFiscalReceipt.ele('printGraphicCoupon', {
+                    operator: receiptRow.graphicCoupon.graphicCoupon.operator ?? 1,
+                    graphicFormat: receiptRow.graphicCoupon.graphicCoupon.format ?? 'B'
+                }, receiptRow.graphicCoupon.graphicCoupon.value ?? '');
+
+            }
+
+            if (receiptRow.message) {
+
+                const {message = '', messageType = receiptRow.message.messageType, index = 1} = receiptRow.message;
+                printerFiscalReceipt.ele('printRecMessage', {
+                    message,
+                    messageType,
+                    index,
+                    operator: receiptRow.message.operator ?? 1,
+                });
+            }
+
+            if (receiptRow.lottery) {
+                printerFiscalReceipt.ele('printRecLotteryID', {
+                    operator: receiptRow.lottery.operator ?? 1,
+                    code: receiptRow.lottery.code
+                });
+            }
+
+            if (receiptRow.refund) {
+                const refund = receiptRow.refund as Refund;
                 if (refund.type === Fiscal.ItemType.HOLD) {
                     if (refund.operation) {
                         printerFiscalReceipt.ele('printRecRefund', {
@@ -334,20 +397,10 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
                     });
                 }
             }
-        }
-        // personalTaxCode
-        if (receipt.personalTaxCode) { 
-            const { message = '', messageType = Fiscal.MessageType.CUSTOMER_ID, index = 1 } = receipt.personalTaxCode;
-            printerFiscalReceipt.ele('printRecMessage', {
-                message,
-                messageType,
-                index,
-                operator: receipt.personalTaxCode.operator ?? 1,
-            });
-        }
-        // subtotals
-        if (receipt.subtotals && receipt.subtotals.length > 0) {
-            for (const subtotal of receipt.subtotals) {
+
+
+            if (receiptRow.subtotal) {
+                const subtotal: Subtotal = receiptRow.subtotal as Subtotal;
                 if (subtotal.type === Fiscal.ItemType.HOLD) {
                     if (subtotal.operations && subtotal.operations.length > 0) {
                         for (const operation of subtotal.operations) {
@@ -387,17 +440,9 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
                     }
                 }
             }
-        }
-        // lottery
-        if (receipt.lottery) {
-            printerFiscalReceipt.ele('printRecLotteryID', {
-                operator: receipt.lottery.operator ?? 1,
-                code: receipt.lottery.code
-            });
-        }
-        // payments
-        if (receipt.payments && receipt.payments.length > 0) {
-            for (const payment of receipt.payments) {
+
+            if (receiptRow.payment) {
+                const payment = receiptRow.payment as Payment;
                 printerFiscalReceipt.ele('printRecTotal', {
                     operator: payment.operator ?? 1,
                     description: payment.description ?? '',
@@ -407,53 +452,27 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
                     justification: payment.justification ?? 1
                 });
             }
+
+
         }
-        // barCode
-        if (receipt.barCode) {
-            printerFiscalReceipt.ele('printBarCode', {
-                operator: receipt.barCode.operator ?? 1,
-                position: receipt.barCode.position ?? 900,
-                width: receipt.barCode.width ?? 1,
-                height: receipt.barCode.height ?? 1,
-                hRIPosition: receipt.barCode.hriPosition ?? 0,
-                hRIFont: receipt.barCode.hriFont ?? 'A',
-                codeType: receipt.barCode.type ?? 'CODE128',
-                code: receipt.barCode.data ?? ''
-            });
-        }
-        // qrCode
-        if (receipt.qrCode) {
-            printerFiscalReceipt.ele('printBarCode', {
-                operator: receipt.qrCode.operator ?? 1,
-                qRCodeAlignment: receipt.qrCode.alignment ?? 0,
-                qRCodeSize: receipt.qrCode.size ?? 1,
-                qRCodeErrorCorrection: receipt.qrCode.errorCorrection ?? 0,
-                codeType: receipt.qrCode.type ?? 'CODE128',
-                code: receipt.qrCode.data ?? ''
-            });
-        }
-        // graphicCoupon
-        if (receipt.graphicCoupon) {
-            printerFiscalReceipt.ele('printGraphicCoupon', {
-                operator: receipt.graphicCoupon.operator ?? 1,
-                graphicFormat: receipt.graphicCoupon.format ?? 'B'
-            }, receipt.graphicCoupon.value ?? '');
-        }
+
         // end
-        printerFiscalReceipt.ele('endFiscalReceipt', { operator: receipt.operator ?? 1 });
+        printerFiscalReceipt.ele('endFiscalReceipt', {operator: receipt.operator ?? 1});
         // openDrawer
         if (receipt.openDrawer) {
             printerFiscalReceipt.ele('openDrawer', {
                 operator: receipt.openDrawer.operator ?? 1
             });
         }
+
+
         return printerFiscalReceipt;
     }
 
     /**
      * convert `Fiscal.Report` to the object that printer server supports.
-     * @param report 
-     * @returns 
+     * @param report
+     * @returns
      */
     private convertReportToXmlDoc(report: Fiscal.Report): xmlbuilder.XMLDocument {
         const printerFiscalReport = xmlbuilder.create('printerFiscalReport');
@@ -477,8 +496,8 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
 
     /**
      * convert `Fiscal.Cancel` to the object that printer server supports.
-     * @param cancel 
-     * @returns 
+     * @param cancel
+     * @returns
      */
     private convertCancelToXmlDoc(cancel: Fiscal.Cancel): xmlbuilder.XMLDocument {
         const printerFiscalReceipt = xmlbuilder.create('printerFiscalReceipt');
@@ -492,22 +511,23 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
 
     /**
      * convert `Fiscal.NonFiscal` to the object that printer server supports.
-     * @param nonFiscal 
-     * @returns 
+     * @param nonFiscal
+     * @returns
      */
     // private convertNonFiscalToXmlDoc(nonFiscal: Fiscal.NonFiscal): xmlbuilder.XMLDocument { }
 
     /**
      * convert `Fiscal.Invoice` to the object that printer server supports.
-     * @param invoice 
-     * @returns 
+     * @param invoice
+     * @returns
      */
+
     // private convertInvoiceToXmlDoc(invoice: Fiscal.Invoice): xmlbuilder.XMLDocument { }
 
     /**
      * convert `Fiscal.Command` to the object that printer server supports.
      * @param commands
-     * @returns 
+     * @returns
      */
     private convertCommandToXmlDoc(...commands: Fiscal.Command[]): xmlbuilder.XMLDocument {
         const printerCommand = xmlbuilder.create(commands.length > 1 ? 'printerCommands' : 'printerCommand');

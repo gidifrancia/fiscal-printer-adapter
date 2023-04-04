@@ -1,4 +1,4 @@
-import { AnyObj } from "./common.type"
+import {AnyObj} from "./common.type"
 
 export namespace Fiscal {
 
@@ -25,18 +25,24 @@ export namespace Fiscal {
     // Core type
     // *********************
 
+    export type ReceiptRow = {
+        sale?: Sale;
+        barcode?: BarCode,
+        qrCode?: QrCode,
+        graphicCoupon?: GraphicCoupon;
+        message?: Message;
+        lottery?: Lottery;
+        refund?: Refund[];
+        subtotal?: Subtotal[];
+        payment?: Payment[];
+
+    }
+
     export type Receipt = {
         operator?: string;
-        sales?: Sale[];
-        lottery?: Lottery;
-        refunds?: Refund[];
-        subtotals?: Subtotal[];
-        payments?: Payment[];
-        barCode?: BarCode;
-        qrCode?: QrCode;
-        graphicCoupon?: GraphicCoupon;
+        rows?: ReceiptRow[];
         openDrawer?: OpenDrawer;
-        personalTaxCode?: Message;
+
     }
 
     export type Report = {
@@ -97,7 +103,7 @@ export namespace Fiscal {
     export type Message = {
         /**
          * represents the text to be printed or the customer ID. The maximum lengths are as follows:
-         * 
+         *
          * Message type 4 = Max 38 (or 37 with invoices)
          * Message type 7 = Max 46 (although native protocol limit is 64)
          * Message type 8 = Not applicable. Attribute can be omitted
@@ -116,7 +122,7 @@ export namespace Fiscal {
         messageType: MessageType;
         /**
          * indicates the line number:
-         * 
+         *
          * Range 1 to 9 for additional header (type 1)
          * Range 1 to 99 for trailer and additional trailer descriptions (types 2 and 3)
          * No meaning for additional row, Customer Id and EFT-POS transaction lines (types 4, 7 and 8)
@@ -127,7 +133,7 @@ export namespace Fiscal {
         font?: number;
         /**
          * attribute is only relevant when messageType is 8:
-         * 
+         *
          * 0 = Print EFT-POS transaction lines
          * 1 = Cancel EFT-POS transaction lines
          */

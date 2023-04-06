@@ -32,9 +32,9 @@ export namespace Fiscal {
         graphicCoupon?: GraphicCoupon;
         message?: Message;
         lottery?: Lottery;
-        refund?: Refund[];
-        subtotal?: Subtotal[];
-        payment?: Payment[];
+        refund?: Refund;
+        subtotal?: Subtotal;
+        payment?: Payment;
 
     }
 

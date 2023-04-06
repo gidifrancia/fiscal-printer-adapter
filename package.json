@@ -12,13 +12,13 @@
         "custom protocol",
         "custom fiscal printer"
     ],
-    "homepage": "https://github.com/lyancoder/fiscal-printer",
+    "homepage": "https://github.com/gidifrancia/fiscal-printer-adapter",
     "repository": {
         "type": "git",
-        "url": "https://github.com/lyancoder/fiscal-printer.git"
+        "url": "https://github.com/gidifrancia/fiscal-printer-adapter.git"
     },
     "bugs": {
-        "url": "https://github.com/lyancoder/fiscal-printer/issues"
+        "url": "https://github.com/gidifrancia/fiscal-printer-adapter/issues"
     },
     "license": "MIT",
     "main": "./dist/lib/index.js",

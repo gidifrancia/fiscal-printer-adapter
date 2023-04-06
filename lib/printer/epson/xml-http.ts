@@ -1,19 +1,13 @@
 import axios from "axios";
-import {
-    BarCode,
-    Fiscal,
-    GraphicCoupon,
-    Lottery,
-    Message, OpenDrawer, Payment,
-    QrCode,
-    Refund,
-    Sale,
-    Subtotal
-} from "../../constants/fiscal.type";
 import {FPrinter} from "../../constants/fprinter.type";
 import * as xmlbuilder from 'xmlbuilder';
 import {Parser} from 'xml2js';
 import ReceiptRow = Fiscal.ReceiptRow;
+import {Fiscal} from "../../constants/fiscal.type";
+import Sale = Fiscal.Sale;
+import Refund = Fiscal.Refund;
+import Subtotal = Fiscal.Subtotal;
+import Payment = Fiscal.Payment;
 
 export class EpsonXmlHttpClient extends FPrinter.Client {
 
@@ -150,8 +144,7 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
         const xmlStr = this.parseRequest(xmlDoc);
         // send
         const resXmlStr: string = await new Promise((resolve, reject) => {
-            axios
-                .post(url, xmlStr, {
+            axios.post(url, xmlStr, {
                     headers: {
                         'Content-Type': 'text/xml;charset=utf-8'
                     }
@@ -334,9 +327,9 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
 
             if (receiptRow.graphicCoupon) {
                 printerFiscalReceipt.ele('printGraphicCoupon', {
-                    operator: receiptRow.graphicCoupon.graphicCoupon.operator ?? 1,
-                    graphicFormat: receiptRow.graphicCoupon.graphicCoupon.format ?? 'B'
-                }, receiptRow.graphicCoupon.graphicCoupon.value ?? '');
+                    operator: receiptRow.graphicCoupon.operator ?? 1,
+                    graphicFormat: receiptRow.graphicCoupon.format ?? 'B'
+                }, receiptRow.graphicCoupon.value ?? '');
 
             }
 

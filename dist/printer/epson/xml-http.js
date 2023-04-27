@@ -164,7 +164,10 @@ class EpsonXmlHttpClient extends fprinter_type_1.FPrinter.Client {
         // begin
         printerFiscalReceipt.ele('beginFiscalReceipt', { operator: (_a = receipt.operator) !== null && _a !== void 0 ? _a : 1 });
         // sales
-        for (const row of receipt.rows) {
+        // @ts-ignore
+        for (let i = 0; i < receipt.rows.length; i++) {
+            // @ts-ignore
+            const row = receipt.rows[i];
             const receiptRow = row;
             if (receiptRow.sale) {
                 const sale = receiptRow.sale;
@@ -448,6 +451,7 @@ class EpsonXmlHttpClient extends fprinter_type_1.FPrinter.Client {
         return printerCommand;
     }
 }
+exports.EpsonXmlHttpClient = EpsonXmlHttpClient;
 EpsonXmlHttpClient.XML_ROOT = 's:Envelope';
 EpsonXmlHttpClient.XML_BODY = 's:Body';
 EpsonXmlHttpClient.XML_RES_ROOT = 'soapenv:Envelope';
@@ -508,5 +512,4 @@ EpsonXmlHttpClient.COMMAND_CODE = {
         });
     }
 };
-exports.EpsonXmlHttpClient = EpsonXmlHttpClient;
 //# sourceMappingURL=xml-http.js.map

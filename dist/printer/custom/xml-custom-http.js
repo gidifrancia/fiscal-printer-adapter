@@ -394,6 +394,7 @@ class CustomXmlHttpClient extends fprinter_custom_1.FPrinterCustom.Client {
         return printerCommand;
     }
 }
+exports.CustomXmlHttpClient = CustomXmlHttpClient;
 CustomXmlHttpClient.XML_RESPONSE = 'response';
 CustomXmlHttpClient.INFO_XML_RESPONSE = 'infoResp';
 CustomXmlHttpClient.XML_HEADER = {
@@ -431,5 +432,4 @@ CustomXmlHttpClient.COMMAND_CODE = {
         });
     }
 };
-exports.CustomXmlHttpClient = CustomXmlHttpClient;
 //# sourceMappingURL=xml-custom-http.js.map

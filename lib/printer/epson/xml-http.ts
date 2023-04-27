@@ -233,7 +233,10 @@ export class EpsonXmlHttpClient extends FPrinter.Client {
         printerFiscalReceipt.ele('beginFiscalReceipt', {operator: receipt.operator ?? 1});
         // sales
 
-        for (const row of receipt.rows) {
+        // @ts-ignore
+        for (let i = 0; i < receipt.rows.length; i++){
+            // @ts-ignore
+            const row = receipt.rows[i];
             const receiptRow: ReceiptRow = row as ReceiptRow;
             if (receiptRow.sale) {
                 const sale: Sale = receiptRow.sale as Sale;

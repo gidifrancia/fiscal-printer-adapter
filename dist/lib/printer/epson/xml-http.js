@@ -164,7 +164,7 @@ class EpsonXmlHttpClient extends fprinter_type_1.FPrinter.Client {
         // begin
         printerFiscalReceipt.ele('beginFiscalReceipt', { operator: (_a = receipt.operator) !== null && _a !== void 0 ? _a : 1 });
         // sales
-        for (const row in receipt.rows) {
+        for (const row of receipt.rows) {
             const receiptRow = row;
             if (receiptRow.sale) {
                 const sale = receiptRow.sale;
